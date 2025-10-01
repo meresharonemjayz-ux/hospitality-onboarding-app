@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospitality Onboarding - AlignWise Integration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👥</text></svg>">
+    <meta name="description" content="Professional employee onboarding system integrated with AlignWise rostering">
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        .notification {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .modal {
+            backdrop-filter: blur(4px);
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <i data-lucide="users" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900">AlignWise Onboarding</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="text-gray-600 hover:text-gray-900 relative" onclick="toggleNotifications()">
+                            <i data-lucide="bell" class="w-5 h-5"></i>
+                            <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center hidden">3</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-bold">M</span>
+                        </div>
+                        <span class="text-sm font-medium">Manager</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Employee Onboarding Dashboard</h1>
+            <p class="text-gray-600">Manage your team's onboarding progress and integration with AlignWise rostering</p>
+            <div class="mt-4 flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-green-500 rounded-full pulse"></div>
+                    <span class="text-sm text-gray-600">AlignWise Connected</span>
+                </div>
+                <div class="text-sm text-gray-500">Last sync: 2 minutes ago</div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Employees</p>
+                        <p class="text-3xl font-bold text-gray-900" id="totalEmployees">24</p>
+                        <p class="text-xs text-green-600 mt-1">↗ +3 this month</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover border-l-4 border-orange-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Active Onboarding</p>
+                        <p class="text-3xl font-bold text-orange-600" id="activeOnboarding">8</p>
+                        <p class="text-xs text-orange-600 mt-1">⏱ 2 due today</p>
+                    </div>
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <i data-lucide="clock" class="w-6 h-6 text-orange-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Completed This Month</p>
+                        <p class="text-3xl font-bold text-green-600" id="completedMonth">12</p>
+                        <p class="text-xs text-green-600 mt-1">✓ 100% completion rate</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover border-l-4 border-purple-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">AlignWise Synced</p>
+                        <p class="text-3xl font-bold text-purple-600" id="alignwiseSynced">24</p>
+                        <p class="text-xs text-purple-600 mt-1">🔄 Auto-sync enabled</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i data-lucide="refresh-cw" class="w-6 h-6 text-purple-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-4 mb-8">
+            <button onclick="openAddEmployeeModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors shadow-sm">
+                <i data-lucide="plus" class="w-5 h-5"></i>
+                <span>Add New Employee</span>
+            </button>
+            <button onclick="openTrainingModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors shadow-sm">
+                <i data-lucide="book-open" class="w-5 h-5"></i>
+                <span>Training Records</span>
+            </button>
+            <button onclick="openLicenseModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors shadow-sm">
+                <i data-lucide="award" class="w-5 h-5"></i>
+                <span>License Manager</span>
+            </button>
+            <button onclick="syncWithAlignWise()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors shadow-sm">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                <span>Sync with AlignWise</span>
+            </button>
+            <button onclick="generatePayrollReport()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors shadow-sm">
+                <i data-lucide="file-text" class="w-5 h-5"></i>
+                <span>Generate Payroll Report</span>
+            </button>
+            <button onclick="openDocumentManager()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors shadow-sm">
+                <i data-lucide="folder" class="w-5 h-5"></i>
+                <span>Document Manager</span>
+            </button>
+            <button onclick="bulkActions()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors shadow-sm">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+                <span>Bulk Actions</span>
+            </button>
+        </div>
+
+        <!-- Quick Stats Bar -->
+        <div class="bg-white rounded-lg shadow-sm p-4 mb-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                    <div class="text-2xl font-bold text-blue-600">94%</div>
+                    <div class="text-sm text-gray-600">Avg. Completion Rate</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-green-600">2.3</div>
+                    <div class="text-sm text-gray-600">Days Avg. Onboarding</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-purple-600">$2,450</div>
+                    <div class="text-sm text-gray-600">Monthly Payroll</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-orange-600">98%</div>
+                    <div class="text-sm text-gray-600">Employee Satisfaction</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee List -->
+        <div class="bg-white rounded-lg shadow-sm">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                    <h2 class="text-lg font-semibold text-gray-900">Employee Onboarding Progress</h2>
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                        <select class="border border-gray-300 rounded-md px-3 py-2 text-sm" onchange="filterEmployees(this.value)">
+                            <option value="all">All Employees</option>
+                            <option value="active">Active Onboarding</option>
+                            <option value="completed">Completed</option>
+                            <option value="overdue">Overdue Tasks</option>
+                            <option value="new">New This Week</option>
+                        </select>
+                        <div class="relative">
+                            <input type="text" placeholder="Search employees..." class="border border-gray-300 rounded-md pl-10 pr-4 py-2 text-sm w-full sm:w-auto" oninput="searchEmployees(this.value)">
+                            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <input type="checkbox" class="rounded" onchange="toggleSelectAll(this)">
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AlignWise Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeeTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Employee rows will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Employee Modal -->
+    <div id="addEmployeeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden modal z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-900">Add New Employee</h3>
+                        <button onclick="closeAddEmployeeModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                <form id="addEmployeeForm" class="p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                            <input type="text" name="firstName" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                            <input type="text" name="lastName" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                        <input type="email" name="email" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <input type="tel" name="phone" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Position *</label>
+                            <select name="position" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select Position</option>
+                                <option value="Barista">Barista</option>
+                                <option value="Server">Server</option>
+                                <option value="Kitchen Hand">Kitchen Hand</option>
+                                <option value="Chef">Chef</option>
+                                <option value="Sous Chef">Sous Chef</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Assistant Manager">Assistant Manager</option>
+                                <option value="Cashier">Cashier</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Department *</label>
+                            <select name="department" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select Department</option>
+                                <option value="Front of House">Front of House</option>
+                                <option value="Kitchen">Kitchen</option>
+                                <option value="Management">Management</option>
+                                <option value="Bar">Bar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
+                            <input type="date" name="startDate" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Hourly Rate (NZD)</label>
+                            <input type="number" name="hourlyRate" step="0.01" min="0" placeholder="25.50" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Emergency Contact</label>
+                        <input type="text" name="emergencyContact" placeholder="Name and phone number" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeAddEmployeeModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
+                            Add Employee
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Details Modal -->
+    <div id="employeeDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden modal z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-900">Employee Details</h3>
+                        <button onclick="closeEmployeeDetailsModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="employeeDetailsContent" class="p-6">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Training Records Modal -->
+    <div id="trainingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden modal z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-900">Training Records Management</h3>
+                        <button onclick="closeTrainingModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="mb-6">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                            <div class="flex space-x-4">
+                                <button onclick="openAddTrainingModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                    <span>Add Training</span>
+                                </button>
+                                <button onclick="generateTrainingReport()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                                    <i data-lucide="download" class="w-4 h-4"></i>
+                                    <span>Export Report</span>
+                                </button>
+                            </div>
+                            <select class="border border-gray-300 rounded-md px-3 py-2 text-sm" onchange="filterTraining(this.value)">
+                                <option value="all">All Training</option>
+                                <option value="completed">Completed</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="overdue">Overdue</option>
+                                <option value="upcoming">Upcoming</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Training Course</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trainingTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Training records will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- License Manager Modal -->
+    <div id="licenseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden modal z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-900">License & Certification Manager</h3>
+                        <button onclick="closeLicenseModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="mb-6">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                            <div class="flex space-x-4">
+                                <button onclick="openAddLicenseModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                    <span>Add License</span>
+                                </button>
+                                <button onclick="checkExpirations()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                                    <span>Check Expirations</span>
+                                </button>
+                            </div>
+                            <select class="border border-gray-300 rounded-md px-3 py-2 text-sm" onchange="filterLicenses(this.value)">
+                                <option value="all">All Licenses</option>
+                                <option value="active">Active</option>
+                                <option value="expiring">Expiring Soon</option>
+                                <option value="expired">Expired</option>
+                                <option value="pending">Pending Renewal</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-green-50 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="check-circle" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-green-800">Active Licenses</p>
+                                    <p class="text-2xl font-bold text-green-900" id="activeLicenses">18</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-yellow-50 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="clock" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-yellow-800">Expiring Soon</p>
+                                    <p class="text-2xl font-bold text-yellow-900" id="expiringSoon">3</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-red-50 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="alert-circle" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-red-800">Expired</p>
+                                    <p class="text-2xl font-bold text-red-900" id="expiredLicenses">1</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">License Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">License Number</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="licenseTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- License records will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Manager Modal -->
+    <div id="documentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden modal z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-screen overflow-y-auto">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-900">Document Management Center</h3>
+                        <button onclick="closeDocumentModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <!-- Document Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                        <button onclick="filterDocuments('all')" class="bg-blue-50 hover:bg-blue-100 rounded-lg p-4 transition-colors text-left card-hover">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="file-text" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-blue-800">Total Documents</p>
+                                    <p class="text-2xl font-bold text-blue-900" id="totalDocuments">12</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button onclick="filterDocuments('contract')" class="bg-green-50 hover:bg-green-100 rounded-lg p-4 transition-colors text-left card-hover">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="file-check" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-green-800">Contracts</p>
+                                    <p class="text-2xl font-bold text-green-900" id="contractCount">4</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button onclick="filterDocuments('license')" class="bg-purple-50 hover:bg-purple-100 rounded-lg p-4 transition-colors text-left card-hover">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="award" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-purple-800">Licenses</p>
+                                    <p class="text-2xl font-bold text-purple-900" id="licenseCount">3</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button onclick="filterDocuments('safety')" class="bg-amber-50 hover:bg-amber-100 rounded-lg p-4 transition-colors text-left card-hover">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="shield-check" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-amber-800">Safety Docs</p>
+                                    <p class="text-2xl font-bold text-amber-900" id="safetyCount">3</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button onclick="filterDocuments('certificate')" class="bg-red-50 hover:bg-red-100 rounded-lg p-4 transition-colors text-left card-hover">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="award" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-red-800">Certificates</p>
+                                    <p class="text-2xl font-bold text-red-900" id="certificateCount">2</p>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mb-6">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                            <div class="flex flex-wrap gap-3">
+                                <button onclick="openUploadModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                                    <i data-lucide="upload" class="w-4 h-4"></i>
+                                    <span>Upload Document</span>
+                                </button>
+                                <button onclick="bulkUpload()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                                    <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                                    <span>Bulk Upload</span>
+                                </button>
+                                <button onclick="generateDocumentReport()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                                    <i data-lucide="download" class="w-4 h-4"></i>
+                                    <span>Export Report</span>
+                                </button>
+                                <button onclick="archiveOldDocuments()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                                    <i data-lucide="archive" class="w-4 h-4"></i>
+                                    <span>Archive Old</span>
+                                </button>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <select class="border border-gray-300 rounded-md px-3 py-2 text-sm" onchange="filterDocuments(this.value)">
+                                    <option value="all">All Documents</option>
+                                    <option value="contract">Contracts</option>
+                                    <option value="license">Licenses</option>
+                                    <option value="certificate">Certificates</option>
+                                    <option value="safety">Health & Safety</option>
+                                    <option value="tax">Tax Documents</option>
+                                    <option value="policy">Policies</option>
+                                </select>
+                                <div class="relative">
+                                    <input type="text" placeholder="Search documents..." class="border border-gray-300 rounded-md pl-10 pr-4 py-2 text-sm w-64" oninput="searchDocuments(this.value)">
+                                    <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-3"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Document Table -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <input type="checkbox" class="rounded" onchange="toggleSelectAllDocuments(this)">
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Document</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Upload Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="documentTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Document rows will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Viewer Modal -->
+    <div id="documentViewerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden modal z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-900" id="documentViewerTitle">Document Viewer</h3>
+                        <button onclick="closeDocumentViewer()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="documentViewerContent" class="p-6">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Document Modal -->
+    <div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-50 hidden modal z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-900">Upload Document</h3>
+                        <button onclick="closeUploadModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                <form id="uploadForm" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Employee *</label>
+                        <select name="employeeId" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                            <option value="">Select Employee</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Document Type *</label>
+                        <select name="documentType" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                            <option value="">Select Type</option>
+                            <option value="contract">Employment Contract</option>
+                            <option value="license">License/Permit</option>
+                            <option value="certificate">Certificate</option>
+                            <option value="safety">Health & Safety</option>
+                            <option value="tax">Tax Document</option>
+                            <option value="policy">Policy Document</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Document Name</label>
+                        <input type="text" name="documentName" placeholder="Leave blank to use filename" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">File *</label>
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-teal-400 transition-colors">
+                            <div class="space-y-1 text-center">
+                                <i data-lucide="upload" class="mx-auto h-12 w-12 text-gray-400"></i>
+                                <div class="flex text-sm text-gray-600">
+                                    <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-teal-600 hover:text-teal-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-teal-500">
+                                        <span>Upload a file</span>
+                                        <input id="file-upload" name="file" type="file" class="sr-only" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="handleFileSelect(this)" required>
+                                    </label>
+                                    <p class="pl-1">or drag and drop</p>
+                                </div>
+                                <p class="text-xs text-gray-500">PDF, DOC, DOCX, JPG, PNG up to 10MB</p>
+                                <div id="selectedFileName" class="text-sm text-teal-600 font-medium hidden"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <textarea name="notes" rows="3" placeholder="Additional notes about this document..." class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"></textarea>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeUploadModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-md transition-colors">
+                            Upload Document
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden notification z-50">
+        <div class="flex items-center space-x-2">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <span id="notificationText">Success!</span>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg p-6 flex items-center space-x-3">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <span class="text-gray-900">Processing...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Sample training records data
+        let trainingRecords = [
+            {
+                id: 1,
+                employeeId: 1,
+                employeeName: 'Sarah Johnson',
+                course: 'Food Safety & Hygiene',
+                type: 'Mandatory',
+                dueDate: '2024-02-15',
+                status: 'completed',
+                progress: 100,
+                completedDate: '2024-01-20',
+                certificateUrl: '#'
+            },
+            {
+                id: 2,
+                employeeId: 2,
+                employeeName: 'Mike Chen',
+                course: 'Kitchen Safety Training',
+                type: 'Mandatory',
+                dueDate: '2024-02-10',
+                status: 'in-progress',
+                progress: 75,
+                completedDate: null,
+                certificateUrl: null
+            },
+            {
+                id: 3,
+                employeeId: 3,
+                employeeName: 'Emma Wilson',
+                course: 'Customer Service Excellence',
+                type: 'Optional',
+                dueDate: '2024-02-20',
+                status: 'completed',
+                progress: 100,
+                completedDate: '2024-01-25',
+                certificateUrl: '#'
+            },
+            {
+                id: 4,
+                employeeId: 4,
+                employeeName: 'James Brown',
+                course: 'Basic First Aid',
+                type: 'Mandatory',
+                dueDate: '2024-02-05',
+                status: 'overdue',
+                progress: 30,
+                completedDate: null,
+                certificateUrl: null
+            },
+            {
+                id: 5,
+                employeeId: 5,
+                employeeName: 'Lisa Davis',
+                course: 'Management Leadership',
+                type: 'Role-specific',
+                dueDate: '2024-03-01',
+                status: 'upcoming',
+                progress: 0,
+                completedDate: null,
+                certificateUrl: null
+            }
+        ];
+
+        // Sample license records data
+        let licenseRecords = [
+            {
+                id: 1,
+                employeeId: 1,
+                employeeName: 'Sarah Johnson',
+                licenseType: 'Food Handler License',
+                licenseNumber: 'FH-2024-001',
+                issueDate: '2024-01-15',
+                expiryDate: '2025-01-15',
+                status: 'active',
+                renewalRequired: false
+            },
+            {
+                id: 2,
+                employeeId: 2,
+                employeeName: 'Mike Chen',
+                licenseType: 'Food Handler License',
+                licenseNumber: 'FH-2024-002',
+                issueDate: '2024-01-20',
+                expiryDate: '2025-01-20',
+                status: 'active',
+                renewalRequired: false
+            },
+            {
+                id: 3,
+                employeeId: 5,
+                employeeName: 'Lisa Davis',
+                licenseType: 'Manager Food Safety',
+                licenseNumber: 'MFS-2023-015',
+                issueDate: '2023-06-01',
+                expiryDate: '2024-06-01',
+                status: 'expiring',
+                renewalRequired: true
+            },
+            {
+                id: 4,
+                employeeId: 3,
+                employeeName: 'Emma Wilson',
+                licenseType: 'Responsible Service of Alcohol',
+                licenseNumber: 'RSA-2023-089',
+                issueDate: '2023-12-01',
+                expiryDate: '2024-12-01',
+                status: 'active',
+                renewalRequired: false
+            },
+            {
+                id: 5,
+                employeeId: 4,
+                employeeName: 'James Brown',
+                licenseType: 'Food Handler License',
+                licenseNumber: 'FH-2023-045',
+                issueDate: '2023-01-25',
+                expiryDate: '2024-01-25',
+                status: 'expired',
+                renewalRequired: true
+            }
+        ];
+
+        // Sample employee data with more realistic information
+        let employees = [
+            {
+                id: 1,
+                firstName: 'Sarah',
+                lastName: 'Johnson',
+                email: 'sarah.johnson@cafe.com',
+                phone: '+64 21 123 4567',
+                position: 'Barista',
+                department: 'Front of House',
+                startDate: '2024-01-15',
+                hourlyRate: 25.50,
+                progress: 85,
+                alignwiseStatus: 'synced',
+                tasksCompleted: 17,
+                totalTasks: 20,
+                status: 'active',
+                emergencyContact: 'John Johnson - +64 21 987 6543',
+                lastActivity: '2024-01-28T10:30:00Z'
+            },
+            {
+                id: 2,
+                firstName: 'Mike',
+                lastName: 'Chen',
+                email: 'mike.chen@cafe.com',
+                phone: '+64 21 234 5678',
+                position: 'Chef',
+                department: 'Kitchen',
+                startDate: '2024-01-20',
+                hourlyRate: 28.00,
+                progress: 45,
+                alignwiseStatus: 'synced',
+                tasksCompleted: 9,
+                totalTasks: 20,
+                status: 'active',
+                emergencyContact: 'Lisa Chen - +64 21 876 5432',
+                lastActivity: '2024-01-28T09:15:00Z'
+            },
+            {
+                id: 3,
+                firstName: 'Emma',
+                lastName: 'Wilson',
+                email: 'emma.wilson@cafe.com',
+                phone: '+64 21 345 6789',
+                position: 'Server',
+                department: 'Front of House',
+                startDate: '2024-01-22',
+                hourlyRate: 24.00,
+                progress: 100,
+                alignwiseStatus: 'synced',
+                tasksCompleted: 18,
+                totalTasks: 18,
+                status: 'completed',
+                emergencyContact: 'Tom Wilson - +64 21 765 4321',
+                lastActivity: '2024-01-28T11:45:00Z'
+            },
+            {
+                id: 4,
+                firstName: 'James',
+                lastName: 'Brown',
+                email: 'james.brown@cafe.com',
+                phone: '+64 21 456 7890',
+                position: 'Kitchen Hand',
+                department: 'Kitchen',
+                startDate: '2024-01-25',
+                hourlyRate: 22.50,
+                progress: 30,
+                alignwiseStatus: 'pending',
+                tasksCompleted: 6,
+                totalTasks: 20,
+                status: 'active',
+                emergencyContact: 'Mary Brown - +64 21 654 3210',
+                lastActivity: '2024-01-28T08:30:00Z'
+            },
+            {
+                id: 5,
+                firstName: 'Lisa',
+                lastName: 'Davis',
+                email: 'lisa.davis@cafe.com',
+                phone: '+64 21 567 8901',
+                position: 'Manager',
+                department: 'Management',
+                startDate: '2024-01-10',
+                hourlyRate: 35.00,
+                progress: 95,
+                alignwiseStatus: 'synced',
+                tasksCompleted: 19,
+                totalTasks: 20,
+                status: 'active',
+                emergencyContact: 'Robert Davis - +64 21 543 2109',
+                lastActivity: '2024-01-28T12:00:00Z'
+            },
+            {
+                id: 6,
+                firstName: 'Alex',
+                lastName: 'Thompson',
+                email: 'alex.thompson@cafe.com',
+                phone: '+64 21 678 9012',
+                position: 'Barista',
+                department: 'Front of House',
+                startDate: '2024-01-28',
+                hourlyRate: 25.00,
+                progress: 15,
+                alignwiseStatus: 'syncing',
+                tasksCompleted: 3,
+                totalTasks: 20,
+                status: 'active',
+                emergencyContact: 'Sarah Thompson - +64 21 432 1098',
+                lastActivity: '2024-01-28T13:15:00Z'
+            }
+        ];
+
+        // Render employee table
+        function renderEmployeeTable(employeeList = employees) {
+            const tbody = document.getElementById('employeeTableBody');
+            tbody.innerHTML = '';
+
+            employeeList.forEach(employee => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+                
+                const progressColor = employee.progress >= 80 ? 'bg-green-500' : 
+                                    employee.progress >= 50 ? 'bg-yellow-500' : 'bg-red-500';
+                
+                const alignwiseStatusColor = employee.alignwiseStatus === 'synced' ? 'bg-green-100 text-green-800' : 
+                                           employee.alignwiseStatus === 'syncing' ? 'bg-yellow-100 text-yellow-800' :
+                                           'bg-red-100 text-red-800';
+                
+                const isNew = new Date(employee.startDate) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <input type="checkbox" class="rounded employee-checkbox" data-employee-id="${employee.id}">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                <span class="text-sm font-medium text-white">${employee.firstName[0]}${employee.lastName[0]}</span>
+                            </div>
+                            <div class="ml-4">
+                                <div class="flex items-center space-x-2">
+                                    <div class="text-sm font-medium text-gray-900">${employee.firstName} ${employee.lastName}</div>
+                                    ${isNew ? '<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">New</span>' : ''}
+                                </div>
+                                <div class="text-sm text-gray-500">${employee.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${employee.position}</div>
+                        <div class="text-sm text-gray-500">${employee.department}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${new Date(employee.startDate).toLocaleDateString('en-NZ')}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-full bg-gray-200 rounded-full h-2 mr-3">
+                                <div class="${progressColor} h-2 rounded-full progress-bar" style="width: ${employee.progress}%"></div>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">${employee.progress}%</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">${employee.tasksCompleted}/${employee.totalTasks} tasks</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${alignwiseStatusColor}">
+                            ${employee.alignwiseStatus}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="viewEmployeeDetails(${employee.id})" class="text-blue-600 hover:text-blue-900 transition-colors">View</button>
+                            <button onclick="sendReminder(${employee.id})" class="text-green-600 hover:text-green-900 transition-colors">Remind</button>
+                            <button onclick="editEmployee(${employee.id})" class="text-purple-600 hover:text-purple-900 transition-colors">Edit</button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Modal functions
+        function openAddEmployeeModal() {
+            document.getElementById('addEmployeeModal').classList.remove('hidden');
+            // Set default start date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.querySelector('input[name="startDate"]').value = today;
+        }
+
+        function closeAddEmployeeModal() {
+            document.getElementById('addEmployeeModal').classList.add('hidden');
+            document.getElementById('addEmployeeForm').reset();
+        }
+
+        function closeEmployeeDetailsModal() {
+            document.getElementById('employeeDetailsModal').classList.add('hidden');
+        }
+
+        // Add employee form submission
+        document.getElementById('addEmployeeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const newEmployee = {
+                id: employees.length + 1,
+                firstName: formData.get('firstName'),
+                lastName: formData.get('lastName'),
+                email: formData.get('email'),
+                phone: formData.get('phone') || '',
+                position: formData.get('position'),
+                department: formData.get('department'),
+                startDate: formData.get('startDate'),
+                hourlyRate: parseFloat(formData.get('hourlyRate')) || 0,
+                progress: 0,
+                alignwiseStatus: 'pending',
+                tasksCompleted: 0,
+                totalTasks: 20,
+                status: 'active',
+                emergencyContact: formData.get('emergencyContact') || '',
+                lastActivity: new Date().toISOString()
+            };
+
+            employees.push(newEmployee);
+            renderEmployeeTable();
+            closeAddEmployeeModal();
+            showNotification(`${newEmployee.firstName} ${newEmployee.lastName} added successfully!`);
+            updateStats();
+        });
+
+        // Filter and search functions
+        function filterEmployees(filter) {
+            let filteredEmployees = employees;
+            
+            switch(filter) {
+                case 'active':
+                    filteredEmployees = employees.filter(emp => emp.progress < 100 && emp.progress > 0);
+                    break;
+                case 'completed':
+                    filteredEmployees = employees.filter(emp => emp.progress === 100);
+                    break;
+                case 'overdue':
+                    filteredEmployees = employees.filter(emp => emp.progress < 50);
+                    break;
+                case 'new':
+                    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                    filteredEmployees = employees.filter(emp => new Date(emp.startDate) > weekAgo);
+                    break;
+            }
+            
+            renderEmployeeTable(filteredEmployees);
+        }
+
+        function searchEmployees(query) {
+            if (!query) {
+                renderEmployeeTable();
+                return;
+            }
+            
+            const filteredEmployees = employees.filter(emp => 
+                emp.firstName.toLowerCase().includes(query.toLowerCase()) ||
+                emp.lastName.toLowerCase().includes(query.toLowerCase()) ||
+                emp.email.toLowerCase().includes(query.toLowerCase()) ||
+                emp.position.toLowerCase().includes(query.toLowerCase()) ||
+                emp.department.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            renderEmployeeTable(filteredEmployees);
+        }
+
+        // Action functions
+        function syncWithAlignWise() {
+            showLoadingOverlay();
+            showNotification('Syncing with AlignWise...', 'info');
+            
+            // Simulate API call
+            setTimeout(() => {
+                employees.forEach(emp => {
+                    if (emp.alignwiseStatus === 'pending') {
+                        emp.alignwiseStatus = 'synced';
+                    }
+                });
+                
+                renderEmployeeTable();
+                updateStats();
+                hideLoadingOverlay();
+                showNotification('Successfully synced with AlignWise! All employee data is up to date.');
+            }, 2000);
+        }
+
+        function generatePayrollReport() {
+            showLoadingOverlay();
+            showNotification('Generating payroll report...', 'info');
+            
+            // Simulate report generation
+            setTimeout(() => {
+                const reportData = employees.map(emp => ({
+                    name: `${emp.firstName} ${emp.lastName}`,
+                    position: emp.position,
+                    hourlyRate: emp.hourlyRate,
+                    hoursWorked: Math.floor(Math.random() * 40) + 20,
+                    grossPay: (emp.hourlyRate * (Math.floor(Math.random() * 40) + 20)).toFixed(2)
+                }));
+                
+                // Create and download CSV
+                const csvContent = "data:text/csv;charset=utf-8," 
+                    + "Name,Position,Hourly Rate,Hours Worked,Gross Pay\n"
+                    + reportData.map(row => `${row.name},${row.position},${row.hourlyRate},${row.hoursWorked},${row.grossPay}`).join("\n");
+                
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `payroll_report_${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                hideLoadingOverlay();
+                showNotification('Payroll report generated and downloaded successfully!');
+            }, 1500);
+        }
+
+        function viewEmployeeDetails(employeeId) {
+            const employee = employees.find(emp => emp.id === employeeId);
+            if (!employee) return;
+            
+            const modal = document.getElementById('employeeDetailsModal');
+            const content = document.getElementById('employeeDetailsContent');
+            
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <span class="text-xl font-bold text-white">${employee.firstName[0]}${employee.lastName[0]}</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">${employee.firstName} ${employee.lastName}</h3>
+                            <p class="text-gray-600">${employee.position} • ${employee.department}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <h4 class="font-semibold text-gray-900">Contact Information</h4>
+                            <div class="space-y-2 text-sm">
+                                <div><span class="font-medium">Email:</span> ${employee.email}</div>
+                                <div><span class="font-medium">Phone:</span> ${employee.phone || 'Not provided'}</div>
+                                <div><span class="font-medium">Emergency Contact:</span> ${employee.emergencyContact || 'Not provided'}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <h4 class="font-semibold text-gray-900">Employment Details</h4>
+                            <div class="space-y-2 text-sm">
+                                <div><span class="font-medium">Start Date:</span> ${new Date(employee.startDate).toLocaleDateString('en-NZ')}</div>
+                                <div><span class="font-medium">Hourly Rate:</span> $${employee.hourlyRate.toFixed(2)} NZD</div>
+                                <div><span class="font-medium">AlignWise Status:</span> 
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${employee.alignwiseStatus === 'synced' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                        ${employee.alignwiseStatus}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-gray-900">Onboarding Progress</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span>Overall Progress</span>
+                                <span>${employee.progress}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div class="bg-blue-600 h-3 rounded-full transition-all duration-500" style="width: ${employee.progress}%"></div>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                ${employee.tasksCompleted} of ${employee.totalTasks} tasks completed
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-gray-900">Documents (${employee.documents ? employee.documents.length : 0})</h4>
+                        <div class="space-y-2">
+                            ${employee.documents && employee.documents.length > 0 ? 
+                                employee.documents.map(doc => `
+                                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                                        <div class="flex items-center space-x-2">
+                                            <i data-lucide="file-text" class="w-4 h-4 text-gray-500"></i>
+                                            <span class="text-sm text-gray-900">${doc.name}</span>
+                                            <span class="text-xs text-gray-500">(${doc.type})</span>
+                                        </div>
+                                        <div class="text-xs text-gray-500">${doc.size}</div>
+                                    </div>
+                                `).join('') : 
+                                '<div class="text-sm text-gray-500 italic">No documents uploaded yet</div>'
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3 pt-4">
+                        <button onclick="sendReminder(${employee.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                            Send Reminder
+                        </button>
+                        <button onclick="editEmployee(${employee.id})" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                            Edit Employee
+                        </button>
+                        <button onclick="closeEmployeeDetailsModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function sendReminder(employeeId) {
+            const employee = employees.find(emp => emp.id === employeeId);
+            showNotification(`Reminder sent to ${employee.firstName} ${employee.lastName}!`);
+        }
+
+        function editEmployee(employeeId) {
+            showNotification('Edit functionality coming soon!', 'info');
+        }
+
+        function bulkActions() {
+            const selectedEmployees = document.querySelectorAll('.employee-checkbox:checked');
+            if (selectedEmployees.length === 0) {
+                showNotification('Please select employees first', 'warning');
+                return;
+            }
+            showNotification(`Bulk actions for ${selectedEmployees.length} employees coming soon!`, 'info');
+        }
+
+        function toggleSelectAll(checkbox) {
+            const employeeCheckboxes = document.querySelectorAll('.employee-checkbox');
+            employeeCheckboxes.forEach(cb => cb.checked = checkbox.checked);
+        }
+
+        function toggleNotifications() {
+            showNotification('Notifications panel coming soon!', 'info');
+        }
+
+        // Notification function
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            
+            let bgColor = 'bg-green-500';
+            if (type === 'info') bgColor = 'bg-blue-500';
+            if (type === 'warning') bgColor = 'bg-yellow-500';
+            if (type === 'error') bgColor = 'bg-red-500';
+            
+            notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg notification z-50`;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 4000);
+        }
+
+        function showLoadingOverlay() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+        }
+
+        function hideLoadingOverlay() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('totalEmployees').textContent = employees.length;
+            document.getElementById('activeOnboarding').textContent = employees.filter(emp => emp.progress < 100 && emp.progress > 0).length;
+            document.getElementById('completedMonth').textContent = employees.filter(emp => emp.progress === 100).length;
+            document.getElementById('alignwiseSynced').textContent = employees.filter(emp => emp.alignwiseStatus === 'synced').length;
+        }
+
+        // Document management functions
+        function openDocumentManager() {
+            document.getElementById('documentModal').classList.remove('hidden');
+            renderDocumentTable();
+            updateDocumentStats();
+            populateEmployeeDropdown();
+        }
+
+        function closeDocumentModal() {
+            document.getElementById('documentModal').classList.add('hidden');
+        }
+
+        function openUploadModal() {
+            document.getElementById('uploadModal').classList.remove('hidden');
+            populateEmployeeDropdown();
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.add('hidden');
+            document.getElementById('uploadForm').reset();
+            document.getElementById('selectedFileName').classList.add('hidden');
+        }
+
+        function populateEmployeeDropdown() {
+            const select = document.querySelector('select[name="employeeId"]');
+            select.innerHTML = '<option value="">Select Employee</option>';
+            
+            employees.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.id;
+                option.textContent = `${emp.firstName} ${emp.lastName} - ${emp.position}`;
+                select.appendChild(option);
+            });
+        }
+
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            const fileNameDiv = document.getElementById('selectedFileName');
+            
+            if (file) {
+                fileNameDiv.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                fileNameDiv.classList.remove('hidden');
+            } else {
+                fileNameDiv.classList.add('hidden');
+            }
+        }
+
+        function getAllDocuments() {
+            let allDocuments = [];
+            employees.forEach(emp => {
+                if (emp.documents) {
+                    emp.documents.forEach(doc => {
+                        allDocuments.push({
+                            ...doc,
+                            employeeId: emp.id,
+                            employeeName: `${emp.firstName} ${emp.lastName}`,
+                            employeePosition: emp.position
+                        });
+                    });
+                }
+            });
+            return allDocuments;
+        }
+
+        function renderDocumentTable(documentList = null) {
+            const tbody = document.getElementById('documentTableBody');
+            tbody.innerHTML = '';
+            
+            const documents = documentList || getAllDocuments();
+
+            documents.forEach(doc => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+                
+                const typeColor = doc.type === 'contract' ? 'bg-green-100 text-green-800' : 
+                                doc.type === 'license' ? 'bg-purple-100 text-purple-800' :
+                                doc.type === 'certificate' ? 'bg-blue-100 text-blue-800' :
+                                doc.type === 'safety' ? 'bg-amber-100 text-amber-800' :
+                                doc.type === 'tax' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800';
+                
+                const fileIcon = doc.name.toLowerCase().includes('.pdf') ? 'file-text' :
+                               doc.name.toLowerCase().includes('.doc') ? 'file-text' :
+                               doc.name.toLowerCase().includes('.jpg') || doc.name.toLowerCase().includes('.png') ? 'image' :
+                               'file';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <input type="checkbox" class="rounded document-checkbox" data-document-id="${doc.id}">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
+                                <i data-lucide="${fileIcon}" class="w-4 h-4 text-gray-600"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">${doc.name}</div>
+                                <div class="text-sm text-gray-500">${doc.size}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${doc.employeeName}</div>
+                        <div class="text-sm text-gray-500">${doc.employeePosition}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${typeColor}">
+                            ${doc.type}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${new Date(doc.uploadDate).toLocaleDateString('en-NZ')}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${doc.size}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                            Active
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="viewDocument(${doc.id})" class="text-blue-600 hover:text-blue-900">View</button>
+                            <button onclick="downloadDocument(${doc.id})" class="text-green-600 hover:text-green-900">Download</button>
+                            <button onclick="deleteDocument(${doc.id})" class="text-red-600 hover:text-red-900">Delete</button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Re-initialize Lucide icons for the new content
+            lucide.createIcons();
+        }
+
+        function updateDocumentStats() {
+            const documents = getAllDocuments();
+            const contractCount = documents.filter(d => d.type === 'contract').length;
+            const licenseCount = documents.filter(d => d.type === 'license').length;
+            const safetyCount = documents.filter(d => d.type === 'safety').length;
+            const certificateCount = documents.filter(d => d.type === 'certificate').length;
+            
+            document.getElementById('totalDocuments').textContent = documents.length;
+            document.getElementById('contractCount').textContent = contractCount;
+            document.getElementById('licenseCount').textContent = licenseCount;
+            document.getElementById('safetyCount').textContent = safetyCount;
+            document.getElementById('certificateCount').textContent = certificateCount;
+        }
+
+        function filterDocuments(filter) {
+            const documents = getAllDocuments();
+            let filteredDocuments = documents;
+            
+            if (filter !== 'all') {
+                filteredDocuments = documents.filter(doc => doc.type === filter);
+            }
+            
+            renderDocumentTable(filteredDocuments);
+        }
+
+        function searchDocuments(query) {
+            if (!query) {
+                renderDocumentTable();
+                return;
+            }
+            
+            const documents = getAllDocuments();
+            const filteredDocuments = documents.filter(doc => 
+                doc.name.toLowerCase().includes(query.toLowerCase()) ||
+                doc.employeeName.toLowerCase().includes(query.toLowerCase()) ||
+                doc.type.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            renderDocumentTable(filteredDocuments);
+        }
+
+        function toggleSelectAllDocuments(checkbox) {
+            const documentCheckboxes = document.querySelectorAll('.document-checkbox');
+            documentCheckboxes.forEach(cb => cb.checked = checkbox.checked);
+        }
+
+        function viewDocument(documentId) {
+            // Find the document across all employees
+            let foundDocument = null;
+            let employeeName = '';
+            
+            employees.forEach(emp => {
+                if (emp.documents) {
+                    const doc = emp.documents.find(d => d.id === documentId);
+                    if (doc) {
+                        foundDocument = doc;
+                        employeeName = `${emp.firstName} ${emp.lastName}`;
+                    }
+                }
+            });
+            
+            if (!foundDocument) {
+                showNotification('Document not found', 'error');
+                return;
+            }
+            
+            openDocumentViewer(foundDocument, employeeName);
+        }
+
+        function downloadDocument(documentId) {
+            showNotification('Document downloaded successfully!');
+        }
+
+        function deleteDocument(documentId) {
+            if (confirm('Are you sure you want to delete this document?')) {
+                // Find and remove the document
+                employees.forEach(emp => {
+                    if (emp.documents) {
+                        emp.documents = emp.documents.filter(doc => doc.id !== documentId);
+                    }
+                });
+                
+                renderDocumentTable();
+                updateDocumentStats();
+                showNotification('Document deleted successfully!');
+            }
+        }
+
+        function bulkUpload() {
+            showNotification('Bulk upload feature coming soon!', 'info');
+        }
+
+        function generateDocumentReport() {
+            showLoadingOverlay();
+            showNotification('Generating document report...', 'info');
+            
+            setTimeout(() => {
+                const documents = getAllDocuments();
+                const csvContent = "data:text/csv;charset=utf-8," 
+                    + "Employee,Document Name,Type,Upload Date,Size\n"
+                    + documents.map(doc => `${doc.employeeName},"${doc.name}",${doc.type},${doc.uploadDate},${doc.size}`).join("\n");
+                
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `document_report_${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                hideLoadingOverlay();
+                showNotification('Document report generated and downloaded!');
+            }, 1500);
+        }
+
+        function archiveOldDocuments() {
+            showNotification('Archive functionality coming soon!', 'info');
+        }
+
+        // Training modal functions
+        function openTrainingModal() {
+            document.getElementById('trainingModal').classList.remove('hidden');
+            renderTrainingTable();
+        }
+
+        function closeTrainingModal() {
+            document.getElementById('trainingModal').classList.add('hidden');
+        }
+
+        function renderTrainingTable(trainingList = trainingRecords) {
+            const tbody = document.getElementById('trainingTableBody');
+            tbody.innerHTML = '';
+
+            trainingList.forEach(training => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+                
+                const statusColor = training.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                                  training.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
+                                  training.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                                  'bg-gray-100 text-gray-800';
+                
+                const progressColor = training.progress >= 80 ? 'bg-green-500' : 
+                                    training.progress >= 50 ? 'bg-yellow-500' : 'bg-red-500';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${training.employeeName}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${training.course}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${training.type === 'Mandatory' ? 'bg-red-100 text-red-800' : training.type === 'Optional' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
+                            ${training.type}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${new Date(training.dueDate).toLocaleDateString('en-NZ')}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusColor}">
+                            ${training.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-full bg-gray-200 rounded-full h-2 mr-3">
+                                <div class="${progressColor} h-2 rounded-full" style="width: ${training.progress}%"></div>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">${training.progress}%</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="viewTrainingDetails(${training.id})" class="text-blue-600 hover:text-blue-900">View</button>
+                            ${training.certificateUrl ? '<button onclick="downloadCertificate(' + training.id + ')" class="text-green-600 hover:text-green-900">Certificate</button>' : ''}
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterTraining(filter) {
+            let filteredTraining = trainingRecords;
+            
+            switch(filter) {
+                case 'completed':
+                    filteredTraining = trainingRecords.filter(t => t.status === 'completed');
+                    break;
+                case 'in-progress':
+                    filteredTraining = trainingRecords.filter(t => t.status === 'in-progress');
+                    break;
+                case 'overdue':
+                    filteredTraining = trainingRecords.filter(t => t.status === 'overdue');
+                    break;
+                case 'upcoming':
+                    filteredTraining = trainingRecords.filter(t => t.status === 'upcoming');
+                    break;
+            }
+            
+            renderTrainingTable(filteredTraining);
+        }
+
+        function generateTrainingReport() {
+            showNotification('Training report generated successfully!');
+        }
+
+        function openAddTrainingModal() {
+            showNotification('Add training functionality coming soon!', 'info');
+        }
+
+        function viewTrainingDetails(trainingId) {
+            showNotification('Training details view coming soon!', 'info');
+        }
+
+        function downloadCertificate(trainingId) {
+            showNotification('Certificate downloaded!');
+        }
+
+        // License modal functions
+        function openLicenseModal() {
+            document.getElementById('licenseModal').classList.remove('hidden');
+            renderLicenseTable();
+            updateLicenseStats();
+        }
+
+        function closeLicenseModal() {
+            document.getElementById('licenseModal').classList.add('hidden');
+        }
+
+        function renderLicenseTable(licenseList = licenseRecords) {
+            const tbody = document.getElementById('licenseTableBody');
+            tbody.innerHTML = '';
+
+            licenseList.forEach(license => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+                
+                const statusColor = license.status === 'active' ? 'bg-green-100 text-green-800' : 
+                                  license.status === 'expiring' ? 'bg-yellow-100 text-yellow-800' :
+                                  license.status === 'expired' ? 'bg-red-100 text-red-800' :
+                                  'bg-gray-100 text-gray-800';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${license.employeeName}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${license.licenseType}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${license.licenseNumber}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${new Date(license.issueDate).toLocaleDateString('en-NZ')}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${new Date(license.expiryDate).toLocaleDateString('en-NZ')}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusColor}">
+                            ${license.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="viewLicenseDetails(${license.id})" class="text-blue-600 hover:text-blue-900">View</button>
+                            ${license.renewalRequired ? '<button onclick="renewLicense(' + license.id + ')" class="text-amber-600 hover:text-amber-900">Renew</button>' : ''}
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterLicenses(filter) {
+            let filteredLicenses = licenseRecords;
+            
+            switch(filter) {
+                case 'active':
+                    filteredLicenses = licenseRecords.filter(l => l.status === 'active');
+                    break;
+                case 'expiring':
+                    filteredLicenses = licenseRecords.filter(l => l.status === 'expiring');
+                    break;
+                case 'expired':
+                    filteredLicenses = licenseRecords.filter(l => l.status === 'expired');
+                    break;
+                case 'pending':
+                    filteredLicenses = licenseRecords.filter(l => l.renewalRequired);
+                    break;
+            }
+            
+            renderLicenseTable(filteredLicenses);
+        }
+
+        function updateLicenseStats() {
+            const active = licenseRecords.filter(l => l.status === 'active').length;
+            const expiring = licenseRecords.filter(l => l.status === 'expiring').length;
+            const expired = licenseRecords.filter(l => l.status === 'expired').length;
+            
+            document.getElementById('activeLicenses').textContent = active;
+            document.getElementById('expiringSoon').textContent = expiring;
+            document.getElementById('expiredLicenses').textContent = expired;
+        }
+
+        function checkExpirations() {
+            const expiring = licenseRecords.filter(l => l.status === 'expiring' || l.status === 'expired');
+            showNotification(`Found ${expiring.length} licenses requiring attention!`, 'warning');
+        }
+
+        function openAddLicenseModal() {
+            showNotification('Add license functionality coming soon!', 'info');
+        }
+
+        function viewLicenseDetails(licenseId) {
+            showNotification('License details view coming soon!', 'info');
+        }
+
+        function renewLicense(licenseId) {
+            showNotification('License renewal process initiated!');
+        }
+
+        // Add sample documents to employees
+        employees[0].documents = [
+            { id: 1, name: 'Employment_Contract_Sarah_Johnson.pdf', type: 'contract', uploadDate: '2024-01-15', size: '245 KB', notes: 'Signed employment contract' },
+            { id: 2, name: 'Food_Handler_License_Sarah.pdf', type: 'license', uploadDate: '2024-01-16', size: '156 KB', notes: 'Valid until Jan 2025' }
+        ];
+        employees[1].documents = [
+            { id: 3, name: 'Employment_Contract_Mike_Chen.pdf', type: 'contract', uploadDate: '2024-01-20', size: '238 KB', notes: 'Kitchen staff contract' },
+            { id: 4, name: 'Health_Safety_Certificate_Mike.pdf', type: 'safety', uploadDate: '2024-01-21', size: '189 KB', notes: 'Kitchen safety training completed' }
+        ];
+        employees[2].documents = [
+            { id: 5, name: 'Employment_Contract_Emma_Wilson.pdf', type: 'contract', uploadDate: '2024-01-22', size: '241 KB', notes: 'Front of house contract' },
+            { id: 6, name: 'RSA_Certificate_Emma.pdf', type: 'certificate', uploadDate: '2024-01-23', size: '167 KB', notes: 'Responsible Service of Alcohol' },
+            { id: 7, name: 'Tax_File_Number_Emma.pdf', type: 'tax', uploadDate: '2024-01-23', size: '98 KB', notes: 'TFN declaration form' }
+        ];
+        employees[3].documents = [
+            { id: 8, name: 'Employment_Contract_James_Brown.pdf', type: 'contract', uploadDate: '2024-01-25', size: '239 KB', notes: 'Kitchen hand position' },
+            { id: 9, name: 'First_Aid_Certificate_James.pdf', type: 'certificate', uploadDate: '2024-01-26', size: '178 KB', notes: 'Basic first aid training' }
+        ];
+        employees[4].documents = [
+            { id: 10, name: 'Manager_Contract_Lisa_Davis.pdf', type: 'contract', uploadDate: '2024-01-10', size: '267 KB', notes: 'Management position contract' },
+            { id: 11, name: 'Food_Safety_Manager_License_Lisa.pdf', type: 'license', uploadDate: '2024-01-11', size: '201 KB', notes: 'Manager food safety certification' },
+            { id: 12, name: 'Workplace_Safety_Policy_Lisa.pdf', type: 'policy', uploadDate: '2024-01-12', size: '134 KB', notes: 'Workplace safety acknowledgment' }
+        ];
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            renderEmployeeTable();
+            updateStats();
+            
+            // Show notification badge
+            document.getElementById('notificationBadge').classList.remove('hidden');
+            
+            // Auto-refresh data every 30 seconds (simulate real-time updates)
+            setInterval(() => {
+                // Simulate some progress updates
+                employees.forEach(emp => {
+                    if (emp.progress < 100 && Math.random() < 0.1) {
+                        emp.progress = Math.min(100, emp.progress + Math.floor(Math.random() * 10));
+                        emp.tasksCompleted = Math.floor((emp.progress / 100) * emp.totalTasks);
+                    }
+                });
+                renderEmployeeTable();
+                updateStats();
+            }, 30000);
+        });
+
+        // Document viewer functions
+        function openDocumentViewer(document, employeeName) {
+            const modal = document.getElementById('documentViewerModal');
+            const title = document.getElementById('documentViewerTitle');
+            const content = document.getElementById('documentViewerContent');
+            
+            title.textContent = `${document.name} - ${employeeName}`;
+            
+            const typeColor = document.type === 'contract' ? 'bg-green-100 text-green-800' : 
+                            document.type === 'license' ? 'bg-purple-100 text-purple-800' :
+                            document.type === 'certificate' ? 'bg-blue-100 text-blue-800' :
+                            document.type === 'safety' ? 'bg-amber-100 text-amber-800' :
+                            document.type === 'tax' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800';
+            
+            const fileIcon = document.name.toLowerCase().includes('.pdf') ? 'file-text' :
+                           document.name.toLowerCase().includes('.doc') ? 'file-text' :
+                           document.name.toLowerCase().includes('.jpg') || document.name.toLowerCase().includes('.png') ? 'image' :
+                           'file';
+            
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <!-- Document Info -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <i data-lucide="${fileIcon}" class="w-6 h-6 text-gray-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-lg font-semibold text-gray-900">${document.name}</h4>
+                                <div class="flex items-center space-x-4 mt-1">
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${typeColor}">
+                                        ${document.type}
+                                    </span>
+                                    <span class="text-sm text-gray-600">Size: ${document.size}</span>
+                                    <span class="text-sm text-gray-600">Uploaded: ${new Date(document.uploadDate).toLocaleDateString('en-NZ')}</span>
+                                </div>
+                            </div>
+                        </div>
+                        ${document.notes ? `
+                            <div class="mt-3 pt-3 border-t border-gray-200">
+                                <p class="text-sm text-gray-700"><strong>Notes:</strong> ${document.notes}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Document Preview -->
+                    <div class="bg-white border-2 border-dashed border-gray-300 rounded-lg p-8">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i data-lucide="${fileIcon}" class="w-8 h-8 text-blue-600"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">Document Preview</h3>
+                            <p class="text-gray-600 mb-4">
+                                This is a demo environment. In a real application, you would see the actual document content here.
+                            </p>
+                            <div class="bg-gray-100 rounded-lg p-4 text-left max-w-md mx-auto">
+                                <div class="text-sm text-gray-700">
+                                    <strong>Document Details:</strong><br>
+                                    • Employee: ${employeeName}<br>
+                                    • Type: ${document.type.charAt(0).toUpperCase() + document.type.slice(1)}<br>
+                                    • File: ${document.name}<br>
+                                    • Size: ${document.size}<br>
+                                    • Upload Date: ${new Date(document.uploadDate).toLocaleDateString('en-NZ')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex justify-center space-x-4 pt-4">
+                        <button onclick="downloadDocument(${document.id})" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span>Download</span>
+                        </button>
+                        <button onclick="printDocument(${document.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                            <i data-lucide="printer" class="w-4 h-4"></i>
+                            <span>Print</span>
+                        </button>
+                        <button onclick="shareDocument(${document.id})" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                            <i data-lucide="share-2" class="w-4 h-4"></i>
+                            <span>Share</span>
+                        </button>
+                        <button onclick="closeDocumentViewer()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                            <span>Close</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeDocumentViewer() {
+            document.getElementById('documentViewerModal').classList.add('hidden');
+        }
+
+        function printDocument(documentId) {
+            showNotification('Print functionality would open print dialog in real application', 'info');
+        }
+
+        function shareDocument(documentId) {
+            showNotification('Share functionality coming soon!', 'info');
+        }
+
+        // Upload form submission
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const employeeId = parseInt(formData.get('employeeId'));
+            const documentType = formData.get('documentType');
+            const documentName = formData.get('documentName');
+            const file = formData.get('file');
+            const notes = formData.get('notes');
+            
+            if (!file || file.size === 0) {
+                showNotification('Please select a file to upload', 'error');
+                return;
+            }
+            
+            // Find the employee
+            const employee = employees.find(emp => emp.id === employeeId);
+            if (!employee) {
+                showNotification('Employee not found', 'error');
+                return;
+            }
+            
+            // Create new document record
+            const newDocument = {
+                id: Date.now(), // Simple ID generation
+                name: documentName || file.name,
+                type: documentType,
+                uploadDate: new Date().toISOString().split('T')[0],
+                size: `${(file.size / 1024).toFixed(0)} KB`,
+                notes: notes
+            };
+            
+            // Add document to employee
+            if (!employee.documents) {
+                employee.documents = [];
+            }
+            employee.documents.push(newDocument);
+            
+            closeUploadModal();
+            renderDocumentTable();
+            updateDocumentStats();
+            showNotification(`Document uploaded successfully for ${employee.firstName} ${employee.lastName}!`);
+        });
+
+        // Close modals when clicking outside
+        document.getElementById('addEmployeeModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddEmployeeModal();
+            }
+        });
+
+        document.getElementById('employeeDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEmployeeDetailsModal();
+            }
+        });
+
+        document.getElementById('trainingModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTrainingModal();
+            }
+        });
+
+        document.getElementById('documentModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDocumentModal();
+            }
+        });
+
+        document.getElementById('uploadModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeUploadModal();
+            }
+        });
+
+        document.getElementById('licenseModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLicenseModal();
+            }
+        });
+
+        document.getElementById('documentViewerModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDocumentViewer();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeAddEmployeeModal();
+                closeEmployeeDetailsModal();
+                closeTrainingModal();
+                closeLicenseModal();
+            }
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                openAddEmployeeModal();
+            }
+            if (e.ctrlKey && e.key === 't') {
+                e.preventDefault();
+                openTrainingModal();
+            }
+            if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                openLicenseModal();
+            }
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                openDocumentManager();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9879813c45cdd9a0',t:'MTc1OTI5NTk2My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
